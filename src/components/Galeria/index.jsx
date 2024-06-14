@@ -19,7 +19,12 @@ const ImagenesContainer = styled.section`
   gap: 24px;
 `;
 
-const Galeria = ({ fotos = [], alSeleccionarFoto, alAlternarFavorito, consulta }) => {
+const Galeria = ({
+    fotos = [],
+    alSeleccionarFoto,
+    alAlternarFavorito,
+    consulta,
+}) => {
     return (
         <>
             <Tag />
@@ -27,18 +32,24 @@ const Galeria = ({ fotos = [], alSeleccionarFoto, alAlternarFavorito, consulta }
                 <SeccionFluida>
                     <Titulo>Navegue por la galería</Titulo>
                     <ImagenesContainer>
-                        {fotos.filter( foto => {
-                            return consulta == '' || foto.titulo.toLowerCase().includes(consulta.toLowerCase())
-                        })
-                        .map((foto) => (
-                            <Imagen
-                                alAlternarFavorito={alAlternarFavorito}
-                                alSolicitarZoom={alSeleccionarFoto}
-                                key={foto.id}
-                                foto={foto}
-                                consulta={consulta}
-                            />
-                        ))}
+                        {fotos
+                            .filter((foto) => {
+                                return (
+                                    consulta == "" ||
+                                    foto.titulo
+                                        .toLocaleLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "")
+                                        .includes(consulta.toLocaleLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, ""))
+                                );
+                            })
+                            .map((foto) => (
+                                <Imagen
+                                    alAlternarFavorito={alAlternarFavorito}
+                                    alSolicitarZoom={alSeleccionarFoto}
+                                    key={foto.id}
+                                    foto={foto}
+                                    consulta={consulta}
+                                />
+                            ))}
                     </ImagenesContainer>
                 </SeccionFluida>
                 <Populares />
