@@ -25,6 +25,7 @@ const Galeria = ({
     alAlternarFavorito,
     consulta,
 }) => {
+
     return (
         <>
             <Tag />

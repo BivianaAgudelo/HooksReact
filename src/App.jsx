@@ -5,10 +5,10 @@ import BarraLateral from "./components/BarraLateral";
 import Banner from "./components/Banner";
 import banner from "./assets/banner.png";
 import Galeria from "./components/Galeria";
-import fotos from "./fotos.json";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ModalZoom from "./components/ModalZoom";
 import Pie from "./components/Pie";
+import Cargando from "./components/Cargando";
 
 const FondoGradiente = styled.div`
   background: linear-gradient(
@@ -37,7 +37,7 @@ const ContenidoGaleria = styled.section`
 
 const App = () => {
   const [consulta, setConsulta] = useState("");
-  const [fotosDeGaleria, setFotosDeGaleria] = useState(fotos);
+  const [fotosDeGaleria, setFotosDeGaleria] = useState([]);
   const [fotoSeleccionada, setFotoSeleccionada] = useState(null);
 
   const alAlternarFavorito = (foto) => {
@@ -61,6 +61,16 @@ const App = () => {
     );
   };
 
+  useEffect(() => {
+    const getData = async () => {
+      const res = await fetch('http://localhost:3000/fotos');
+      const data = await res.json();
+      setFotosDeGaleria([...data]);
+    }
+
+    setTimeout(() => getData(), 5000);
+  }, [])
+
   return (
     <>
       <FondoGradiente>
@@ -74,12 +84,16 @@ const App = () => {
                 texto="La galería más completa de fotos del espacio"
                 backgroundImage={banner}
               />
-              <Galeria
-                alSeleccionarFoto={(foto) => setFotoSeleccionada(foto)}
-                fotos={fotosDeGaleria}
-                alAlternarFavorito={alAlternarFavorito}
-                consulta={consulta}
-              />
+              {
+                fotosDeGaleria.length == 0 ? 
+                <Cargando></Cargando> :
+                <Galeria
+                  alSeleccionarFoto={(foto) => setFotoSeleccionada(foto)}
+                  fotos={fotosDeGaleria}
+                  alAlternarFavorito={alAlternarFavorito}
+                  consulta={consulta}
+                />
+              }
             </ContenidoGaleria>
           </MainContainer>
         </AppContainer>
