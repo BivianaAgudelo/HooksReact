@@ -9,6 +9,8 @@ import { useState, useEffect } from "react";
 import ModalZoom from "./components/ModalZoom";
 import Pie from "./components/Pie";
 import Cargando from "./components/Cargando";
+import GlobalContextProvider from "./context/GlobalContext"
+
 
 const FondoGradiente = styled.div`
   background: linear-gradient(
@@ -36,74 +38,27 @@ const ContenidoGaleria = styled.section`
 `;
 
 const App = () => {
-  const [consulta, setConsulta] = useState("");
-  const [fotosDeGaleria, setFotosDeGaleria] = useState([]);
-  const [fotoSeleccionada, setFotoSeleccionada] = useState(null);
-
-  const alAlternarFavorito = (foto) => {
-    if (foto.id === fotoSeleccionada?.id) {
-      setFotoSeleccionada({
-        ...fotoSeleccionada,
-        favorita: !fotoSeleccionada.favorita,
-      });
-    }
-
-    setFotosDeGaleria(
-      fotosDeGaleria.map((fotoDeGaleria) => {
-        return {
-          ...fotoDeGaleria,
-          favorita:
-            fotoDeGaleria.id === foto.id
-              ? !foto.favorita
-              : fotoDeGaleria.favorita,
-        };
-      })
-    );
-  };
-
-  useEffect(() => {
-    const getData = async () => {
-      const res = await fetch('http://localhost:3000/fotos');
-      const data = await res.json();
-      setFotosDeGaleria([...data]);
-    }
-
-    setTimeout(() => getData(), 5000);
-  }, [])
-
   return (
     <>
       <FondoGradiente>
         <GlobalStyles />
-        <AppContainer>
-          <Cabecera setConsulta={setConsulta} />
-          <MainContainer>
-            <BarraLateral />
-            <ContenidoGaleria>
-              <Banner
-                texto="La galería más completa de fotos del espacio"
-                backgroundImage={banner}
-              />
-              {
-                fotosDeGaleria.length == 0 ? 
-                <Cargando></Cargando> :
-                <Galeria
-                  alSeleccionarFoto={(foto) => setFotoSeleccionada(foto)}
-                  fotos={fotosDeGaleria}
-                  alAlternarFavorito={alAlternarFavorito}
-                  consulta={consulta}
+        <GlobalContextProvider>
+          <AppContainer>
+            <Cabecera />
+            <MainContainer>
+              <BarraLateral />
+              <ContenidoGaleria>
+                <Banner
+                  texto="La galería más completa de fotos del espacio"
+                  backgroundImage={banner}
                 />
-              }
-            </ContenidoGaleria>
-          </MainContainer>
-        </AppContainer>
-
-        <ModalZoom
-          foto={fotoSeleccionada}
-          alCerrar={() => setFotoSeleccionada(null)}
-          alAlternarFavorito={alAlternarFavorito}
-        />
-        <Pie />
+                <Galeria />
+              </ContenidoGaleria>
+            </MainContainer>
+          </AppContainer>
+          <ModalZoom />
+          <Pie />
+        </GlobalContextProvider>
       </FondoGradiente>
     </>
   );
