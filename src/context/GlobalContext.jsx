@@ -1,6 +1,4 @@
-import { createContext, useState, useEffect } from "react";
-import React from "react";
-
+import { createContext, useEffect, useReducer, useState } from "react";
 
 // * Context API
 // * 1_ crear el contexto
@@ -11,55 +9,81 @@ import React from "react";
 
 export const GlobalContext = createContext();
 
+const initialState = {
+    consulta: "",
+    fotosDeGaleria: [],
+    fotoSeleccionada: null,
+};
+
+const reducer = (state, action) => {
+    switch (action.type) {
+        case "SET_CONSULTA":
+            return { ...state, consulta: action.payload };
+        case "SET_FOTOS_DE_GALERIA":
+            return { ...state, fotosDeGaleria: action.payload };
+        case "SET_FOTO_SELECCIONADA":
+            return { ...state, fotoSeleccionada: action.payload };
+        case "ALTERNAR_FAVORITO":
+            const fotosDeGaleria = state.fotosDeGaleria.map((fotoDeGaleria) => {
+                return {
+                    ...fotoDeGaleria,
+                    favorita:
+                        fotoDeGaleria.id === action.payload.id
+                            ? !action.payload.favorita
+                            : fotoDeGaleria.favorita,
+                };
+            });
+            if (action.payload.id === state.fotoSeleccionada?.id) {
+                return {
+                    ...state,
+                    fotosDeGaleria: fotosDeGaleria,
+                    fotoSeleccionada: {
+                        ...state.fotoSeleccionada,
+                        favorita: !state.fotoSeleccionada.favorita,
+                    },
+                };
+            } else {
+                return {
+                    ...state,
+                    fotosDeGaleria: fotosDeGaleria,
+                };
+            }
+        default:
+            return state;
+    }
+};
+
 // * 2_ se crea el componente que nos va a permitir compartir o proveer las cosas (el contexto)
 
 const GlobalContextProvider = ({ children }) => {
-    const [consulta, setConsulta] = useState("");
-    const [fotosDeGaleria, setFotosDeGaleria] = useState([]);
-    const [fotoSeleccionada, setFotoSeleccionada] = useState(null);
+    const [state, dispatch] = useReducer(reducer, initialState);
+
+    //const [consulta, setConsulta] = useState("");
+    //const [fotosDeGaleria, setFotosDeGaleria] = useState([]);
+    //const [fotoSeleccionada, setFotoSeleccionada] = useState(null);
 
     useEffect(() => {
         const getData = async () => {
             const res = await fetch("http://localhost:3000/fotos");
             const data = await res.json();
-            setFotosDeGaleria([...data]);
+            //setFotosDeGaleria([...data]);
+            dispatch({ type: "SET_FOTOS_DE_GALERIA", payload: data });
         };
 
         setTimeout(() => getData(), 5000);
     }, []);
 
-    const alAlternarFavorito = (foto) => {
-        if (foto.id === fotoSeleccionada?.id) {
-            setFotoSeleccionada({
-                ...fotoSeleccionada,
-                favorita: !fotoSeleccionada.favorita,
-            });
-        }
-
-        setFotosDeGaleria(
-            fotosDeGaleria.map((fotoDeGaleria) => {
-                return {
-                    ...fotoDeGaleria,
-                    favorita:
-                        fotoDeGaleria.id === foto.id
-                            ? !foto.favorita
-                            : fotoDeGaleria.favorita,
-                };
-            })
-        );
-    };
+    // const globalState = {
+    //     consulta,
+    //     setConsulta,
+    //     fotosDeGaleria,
+    //     fotoSeleccionada,
+    //     setFotoSeleccionada,
+    //     alAlternarFavorito,
+    // };
 
     return (
-        <GlobalContext.Provider
-            value={{
-                consulta,
-                setConsulta,
-                fotosDeGaleria,
-                fotoSeleccionada,
-                setFotoSeleccionada,
-                alAlternarFavorito,
-            }}
-        >
+        <GlobalContext.Provider value={{ state, dispatch }}>
             {children}
         </GlobalContext.Provider>
     );
